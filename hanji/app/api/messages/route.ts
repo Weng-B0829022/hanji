@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { actions } from './actions';
 import { getAIStatus } from './aiStatus';
-
+import { prompt } from './prompt';
 // LINE Bot 消息請求接口
 interface LineMessageRequest {
   destination: string;
@@ -76,7 +76,7 @@ async function generateAIResponse(message: string): Promise<string> {
         body: JSON.stringify({
           contents: [{
             parts:[{
-              text: `你將扮演一隻狗，名叫憨吉。接下來你的主人會給你一些指令，你必須設身處地回答，但是你只是一隻狗，你只會"汪"，因此你可以使用一些標點符號以及數個"汪"來回答。以下是主人的訊息：${message}`
+              text: prompt + message
             }]
           }]
         })
