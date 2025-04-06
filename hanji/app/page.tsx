@@ -13,6 +13,7 @@ interface LineMessage {
 
 interface ApiResponse {
   messages: LineMessage[];
+  useAI: boolean;
   error?: string;
 }
 
@@ -20,6 +21,8 @@ export default function Home() {
   const [messages, setMessages] = useState<LineMessage[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [useAI, setUseAI] = useState<boolean>(false);
+  const [aiToggleLoading, setAiToggleLoading] = useState<boolean>(false);
 
   // 獲取消息
   const fetchMessages = async () => {
@@ -30,14 +33,47 @@ export default function Home() {
       
       if (data.error) {
         setError(data.error);
-      } else if (data.messages) {
-        setMessages(data.messages);
+      } else {
+        if (data.messages) {
+          setMessages(data.messages);
+        }
+        
+        if (typeof data.useAI === 'boolean') {
+          setUseAI(data.useAI);
+        }
       }
     } catch (error) {
       console.error('獲取訊息時出錯:', error);
       setError('無法獲取消息，請稍後再試');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 切換 AI 回應
+  const toggleAI = async () => {
+    try {
+      setAiToggleLoading(true);
+      const response = await fetch('/api/messages/toggle-ai', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ useAI: !useAI }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.error) {
+        setError(data.error);
+      } else if (typeof data.useAI === 'boolean') {
+        setUseAI(data.useAI);
+      }
+    } catch (error) {
+      console.error('切換 AI 時出錯:', error);
+      setError('切換 AI 失敗，請稍後再試');
+    } finally {
+      setAiToggleLoading(false);
     }
   };
 
@@ -69,6 +105,30 @@ export default function Home() {
       </header>
       
       <main className="flex-1 w-full max-w-2xl mx-auto flex flex-col gap-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-bold">設置</h2>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm">使用 AI 回應:</span>
+              <button 
+                onClick={toggleAI}
+                disabled={aiToggleLoading}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${useAI ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'}`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    useAI ? 'translate-x-6' : 'translate-x-1'
+                  } ${aiToggleLoading ? 'opacity-70' : ''}`}
+                />
+              </button>
+            </div>
+          </div>
+          
+          <div className="mt-4 text-sm">
+            <p>{useAI ? '目前使用 AI (Gemini) 產生憨吉的回應' : '目前使用隨機產生憨吉的回應'}</p>
+          </div>
+        </div>
+
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex-1 overflow-auto">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold">接收到的消息記錄</h2>
@@ -133,8 +193,16 @@ export default function Home() {
           <div className="space-y-2">
             <p>此頁面顯示從 LINE Bot 接收到的文字消息及機器人的回复。</p>
             <p>系統會自動每 5 秒刷新一次，您也可以點擊「刷新」按鈕手動更新。</p>
-            <p>目前機器人會回复用戶的原始消息並在後面加上「汪汪！」。</p>
-            <p>請確保已設置 LINE_CHANNEL_ACCESS_TOKEN 環境變量。</p>
+            <p>憨吉的回應模式：</p>
+            <ul className="list-disc ml-5 space-y-1">
+              <li>
+                <strong>隨機回應模式：</strong> 如果您的消息中包含特定指令（如「過來」、「坐下」等），憨吉有 30% 的機率會執行對應的動作，其餘 70% 的機率或沒有特定指令時，憨吉會隨機回应一個通用動作
+              </li>
+              <li>
+                <strong>AI 回應模式：</strong> 使用 Gemini AI 模型產生更智能的回應，以「汪」為主，但能理解您的指令並做出類似狗的反應
+              </li>
+            </ul>
+            <p>您可以使用頂部的切換按鈕隨時切換這兩種模式。</p>
           </div>
         </div>
       </main>
