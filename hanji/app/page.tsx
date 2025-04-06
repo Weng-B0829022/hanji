@@ -8,6 +8,7 @@ interface LineMessage {
   timestamp: number;
   userId?: string;
   type: string;
+  reply?: string;
 }
 
 interface ApiResponse {
@@ -98,12 +99,29 @@ export default function Home() {
             <div className="space-y-4">
               {messages.map((msg, index) => (
                 <div key={index} className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-                  <p className="mb-2 text-lg">{msg.text}</p>
-                  <div className="text-xs text-gray-500 flex justify-between">
-                    <span>用戶 ID: {msg.userId || '未知'}</span>
-                    <span>類型: {msg.type}</span>
-                    <span>{new Date(msg.timestamp).toLocaleString()}</span>
+                  <div className="mb-3">
+                    <div className="flex items-start space-x-2">
+                      <div className="bg-blue-100 dark:bg-blue-800 p-3 rounded-lg inline-block max-w-[85%]">
+                        <p className="text-lg">{msg.text}</p>
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1 ml-1">
+                      用戶 ID: {msg.userId || '未知'} | {new Date(msg.timestamp).toLocaleString()}
+                    </div>
                   </div>
+                  
+                  {msg.reply && (
+                    <div className="flex justify-end mb-1">
+                      <div className="flex flex-col items-end">
+                        <div className="bg-green-100 dark:bg-green-800 p-3 rounded-lg inline-block max-w-[85%]">
+                          <p className="text-lg">{msg.reply}</p>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1 mr-1">
+                          機器人回复 | {new Date(msg.timestamp + 100).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -113,9 +131,10 @@ export default function Home() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h2 className="text-xl font-bold mb-4">使用說明</h2>
           <div className="space-y-2">
-            <p>此頁面顯示從 LINE Bot 接收到的文字消息。</p>
+            <p>此頁面顯示從 LINE Bot 接收到的文字消息及機器人的回复。</p>
             <p>系統會自動每 5 秒刷新一次，您也可以點擊「刷新」按鈕手動更新。</p>
-            <p>目前僅顯示文字類型的消息。</p>
+            <p>目前機器人會回复用戶的原始消息並在後面加上「汪汪！」。</p>
+            <p>請確保已設置 LINE_CHANNEL_ACCESS_TOKEN 環境變量。</p>
           </div>
         </div>
       </main>
