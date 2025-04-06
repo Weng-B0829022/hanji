@@ -63,7 +63,7 @@ async function generateAIResponse(message: string): Promise<string> {
     
     if (!GEMINI_API_KEY) {
       console.error('缺少 GEMINI_API_KEY，無法使用 AI 回复');
-      return '憨吉汪汪...(AI回应失敗)';
+      return '汪汪...(AI回应失敗)';
     }
     
     const response = await fetch(
@@ -86,14 +86,14 @@ async function generateAIResponse(message: string): Promise<string> {
     const data: GeminiResponse = await response.json();
     
     if (data.candidates && data.candidates[0]?.content?.parts && data.candidates[0].content.parts[0].text) {
-      return '憨吉' + data.candidates[0].content.parts[0].text;
+      return data.candidates[0].content.parts[0].text;
     } else {
       console.error('Gemini API 返回格式不正確:', data);
-      return '憨吉汪汪...(無法理解)';
+      return '汪汪...(無法理解)';
     }
   } catch (error) {
     console.error('使用 Gemini API 生成回复時出錯:', error);
-    return '憨吉不懂....汪汪汪汪汪(無法理解)';
+    return '不懂....汪汪汪汪汪(無法理解)';
   }
 }
 
@@ -145,8 +145,10 @@ async function replyToLine(replyToken: string, message: string): Promise<ReplyRe
   if (useAIResponse) {
     // 使用 AI 生成回复
     replyText = await generateAIResponse(message);
+    // AI回覆前不添加"憨吉"前綴
   } else {
     // 使用預設的回复模式
+    // 非AI回覆前添加"憨吉"前綴
     replyText = getReplyFromActions(message);
   }
   
