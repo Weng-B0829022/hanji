@@ -63,7 +63,7 @@ async function generateAIResponse(message: string): Promise<string> {
     
     if (!GEMINI_API_KEY) {
       console.error('缺少 GEMINI_API_KEY，無法使用 AI 回复');
-      return '汪汪...(AI回应失敗)';
+      return '汪汪...(AI回應失敗)';
     }
     
     const response = await fetch(
