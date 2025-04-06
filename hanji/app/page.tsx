@@ -205,6 +205,7 @@ export default function Home() {
           <div className="space-y-2">
             <p>此頁面顯示從 LINE Bot 接收到的文字消息及機器人的回复。</p>
             <p>系統會自動每 5 秒刷新一次，您也可以點擊「刷新」按鈕手動更新。</p>
+            <p className="text-red-500 font-medium">注意：只有在消息中提到「憨吉」時，憨吉才會回應!</p>
             <p>憨吉的回應模式：</p>
             <ul className="list-disc ml-5 space-y-1">
               <li>
@@ -215,6 +216,14 @@ export default function Home() {
               </li>
             </ul>
             <p>您可以使用頂部的切換按鈕隨時切換這兩種模式。</p>
+            <div className="bg-yellow-100 dark:bg-yellow-800 p-3 rounded-lg mt-3">
+              <p className="font-medium">使用範例：</p>
+              <ul className="list-disc ml-5">
+                <li>「憨吉，過來」 - 會觸發回應</li>
+                <li>「憨吉坐下」 - 會觸發回應</li>
+                <li>「過來坐下」 - 不會觸發回應，因為沒有提到「憨吉」</li>
+              </ul>
+            </div>
           </div>
         </div>
       </main>

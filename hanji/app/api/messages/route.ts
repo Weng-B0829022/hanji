@@ -201,9 +201,15 @@ export async function POST(request: NextRequest) {
         const originalText = event.message?.text || '';
         let replyResult: ReplyResult = { success: false, reply: null };
         
-        // 如果有回复令牌，發送回复
-        if (event.replyToken) {
+        // 檢查消息是否包含「憨吉」
+        const shouldReply = originalText.includes('憨吉');
+        
+        // 如果消息包含「憨吉」且有回复令牌，才發送回复
+        if (shouldReply && event.replyToken) {
           replyResult = await replyToLine(event.replyToken, originalText);
+          console.log('觸發憨吉回應:', originalText);
+        } else if (!shouldReply) {
+          console.log('未提到憨吉，不觸發回應:', originalText);
         }
         
         // 存儲消息
