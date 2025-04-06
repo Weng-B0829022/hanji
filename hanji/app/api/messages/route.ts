@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { actions } from './actions';
+import { exportAIStatus } from './toggle-ai/route';
 
 // LINE Bot 消息請求接口
 interface LineMessageRequest {
@@ -55,9 +56,6 @@ interface GeminiResponse {
 // 内存中存储消息，理想情况下应该使用数据库
 let messageHistory: StoredMessage[] = [];
 
-// 全局变量存储 AI 切换状态
-let useAIResponse: boolean = false;
-
 // 使用 Gemini API 生成回复
 async function generateAIResponse(message: string): Promise<string> {
   try {
@@ -95,7 +93,7 @@ async function generateAIResponse(message: string): Promise<string> {
     }
   } catch (error) {
     console.error('使用 Gemini API 生成回复時出錯:', error);
-    return '憨吉汪汪汪...(AI出錯了)';
+    return '憨吉不懂....汪汪汪汪汪(無法理解)';
   }
 }
 
@@ -137,6 +135,9 @@ async function replyToLine(replyToken: string, message: string): Promise<ReplyRe
     console.error('缺少 LINE Channel Access Token，無法回复消息');
     return { success: false, reply: null };
   }
+  
+  // 從 toggle-ai 模塊獲取當前 AI 狀態
+  const useAIResponse = exportAIStatus();
   
   // 根據設置選擇回复方式
   let replyText: string;
@@ -243,41 +244,18 @@ export async function POST(request: NextRequest) {
 // GET /api/messages
 export async function GET() {
   try {
-    // 返回所有存儲的消息
+    // 從 toggle-ai 模塊獲取當前 AI 狀態
+    const useAIStatus = exportAIStatus();
+    
+    // 返回所有存儲的消息和當前 AI 狀態
     return NextResponse.json({ 
       messages: messageHistory,
-      useAI: useAIResponse
+      useAI: useAIStatus
     }, { status: 200 });
   } catch (error) {
     console.error('獲取消息時發生錯誤:', error);
     return NextResponse.json(
       { error: '獲取消息時發生錯誤' },
-      { status: 500 }
-    );
-  }
-}
-
-// PATCH /api/messages/toggle-ai
-export async function PATCH(request: NextRequest) {
-  try {
-    const { useAI } = await request.json();
-    
-    if (typeof useAI === 'boolean') {
-      useAIResponse = useAI;
-      return NextResponse.json({ 
-        success: true, 
-        useAI: useAIResponse 
-      }, { status: 200 });
-    } else {
-      return NextResponse.json(
-        { error: '參數無效' },
-        { status: 400 }
-      );
-    }
-  } catch (error) {
-    console.error('切換 AI 時發生錯誤:', error);
-    return NextResponse.json(
-      { error: '切換 AI 時發生錯誤' },
       { status: 500 }
     );
   }

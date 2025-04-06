@@ -54,6 +54,10 @@ export default function Home() {
   const toggleAI = async () => {
     try {
       setAiToggleLoading(true);
+      setError(null); // 清除之前的錯誤
+
+      console.log('切換 AI 狀態，當前:', useAI, '切換為:', !useAI);
+      
       const response = await fetch('/api/messages/toggle-ai', {
         method: 'PATCH',
         headers: {
@@ -62,7 +66,12 @@ export default function Home() {
         body: JSON.stringify({ useAI: !useAI }),
       });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
+      console.log('切換 AI 回應:', data);
       
       if (data.error) {
         setError(data.error);
@@ -126,6 +135,9 @@ export default function Home() {
           
           <div className="mt-4 text-sm">
             <p>{useAI ? '目前使用 AI (Gemini) 產生憨吉的回應' : '目前使用隨機產生憨吉的回應'}</p>
+            {error && (
+              <p className="text-red-500 mt-2">{error}</p>
+            )}
           </div>
         </div>
 
@@ -141,7 +153,7 @@ export default function Home() {
             </button>
           </div>
           
-          {error && (
+          {error && !aiToggleLoading && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
               {error}
             </div>
