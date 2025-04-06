@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// 可以訪問父目錄中的全局變量
-let useAIResponse = false;
+import { getAIStatus, setAIStatus } from '../aiStatus';
 
 // PATCH /api/messages/toggle-ai
 export async function PATCH(request: NextRequest) {
@@ -9,15 +7,12 @@ export async function PATCH(request: NextRequest) {
     const { useAI } = await request.json();
     
     if (typeof useAI === 'boolean') {
-      // 更新全局變量
-      useAIResponse = useAI;
-      
-      // 導出以便其他模塊使用
-      exportAIStatus(useAI);
+      // 使用獨立模塊更新狀態
+      const newStatus = setAIStatus(useAI);
       
       return NextResponse.json({ 
         success: true, 
-        useAI: useAIResponse 
+        useAI: newStatus 
       }, { status: 200 });
     } else {
       return NextResponse.json(
@@ -34,17 +29,9 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
-// 導出當前狀態，以便在其他模塊中使用
-export function exportAIStatus(status?: boolean) {
-  if (typeof status === 'boolean') {
-    useAIResponse = status;
-  }
-  return useAIResponse;
-}
-
 // GET /api/messages/toggle-ai
 export async function GET() {
   return NextResponse.json({ 
-    useAI: useAIResponse 
+    useAI: getAIStatus() 
   }, { status: 200 });
 } 

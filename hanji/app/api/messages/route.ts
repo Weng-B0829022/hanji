@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { actions } from './actions';
-import { exportAIStatus } from './toggle-ai/route';
+import { getAIStatus } from './aiStatus';
 
 // LINE Bot 消息請求接口
 interface LineMessageRequest {
@@ -136,8 +136,8 @@ async function replyToLine(replyToken: string, message: string): Promise<ReplyRe
     return { success: false, reply: null };
   }
   
-  // 從 toggle-ai 模塊獲取當前 AI 狀態
-  const useAIResponse = exportAIStatus();
+  // 從獨立模塊獲取當前 AI 狀態
+  const useAIResponse = getAIStatus();
   
   // 根據設置選擇回复方式
   let replyText: string;
@@ -244,8 +244,8 @@ export async function POST(request: NextRequest) {
 // GET /api/messages
 export async function GET() {
   try {
-    // 從 toggle-ai 模塊獲取當前 AI 狀態
-    const useAIStatus = exportAIStatus();
+    // 從獨立模塊獲取當前 AI 狀態
+    const useAIStatus = getAIStatus();
     
     // 返回所有存儲的消息和當前 AI 狀態
     return NextResponse.json({ 
