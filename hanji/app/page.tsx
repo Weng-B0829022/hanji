@@ -1,72 +1,107 @@
 'use client';
 
-import { useState, FormEvent } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 
-interface Message {
-  message: string;
-  timestamp: string;
-  status: string;
+interface LineMessage {
+  text: string;
+  timestamp: number;
+  userId?: string;
+  type: string;
+}
+
+interface ApiResponse {
+  messages: LineMessage[];
+  error?: string;
 }
 
 export default function Home() {
-  const [message, setMessage] = useState<string>('');
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [messages, setMessages] = useState<LineMessage[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    
-    if (!message.trim()) return;
-    
-    setLoading(true);
+  // 獲取消息
+  const fetchMessages = async () => {
     try {
-      const response = await fetch('/api/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message }),
-      });
+      setLoading(true);
+      const response = await fetch('/api/messages');
+      const data: ApiResponse = await response.json();
       
-      const data: Message = await response.json();
-      setMessages(prev => [...prev, data]);
-      setMessage('');
+      if (data.error) {
+        setError(data.error);
+      } else if (data.messages) {
+        setMessages(data.messages);
+      }
     } catch (error) {
-      console.error('發送訊息時出錯:', error);
+      console.error('獲取訊息時出錯:', error);
+      setError('無法獲取消息，請稍後再試');
     } finally {
       setLoading(false);
     }
   };
 
+  // 頁面加載時獲取消息
+  useEffect(() => {
+    fetchMessages();
+    
+    // 設置輪詢，每5秒檢查一次新消息
+    const interval = setInterval(fetchMessages, 5000);
+    
+    // 組件卸載時清除輪詢
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen p-8 pb-20 gap-8 font-[family-name:var(--font-geist-sans)]">
       <header className="flex justify-center py-4">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={120}
-          height={30}
-          priority
-        />
+        <div className="flex flex-col items-center">
+          <Image
+            className="dark:invert mb-2"
+            src="/next.svg"
+            alt="Next.js logo"
+            width={120}
+            height={30}
+            priority
+          />
+          <h1 className="text-2xl font-bold">LINE Bot 消息接收器</h1>
+        </div>
       </header>
       
       <main className="flex-1 w-full max-w-2xl mx-auto flex flex-col gap-8">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex-1 overflow-auto">
-          <h2 className="text-xl font-bold mb-4">訊息記錄</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold">接收到的消息記錄</h2>
+            <button 
+              onClick={fetchMessages}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+              disabled={loading}
+            >
+              {loading ? '載入中...' : '刷新'}
+            </button>
+          </div>
           
-          {messages.length === 0 ? (
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              {error}
+            </div>
+          )}
+          
+          {loading && messages.length === 0 ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          ) : messages.length === 0 ? (
             <div className="text-center py-10 text-gray-500">
-              還沒有訊息，請發送您的第一條訊息！
+              還沒有接收到任何 LINE 消息，請等待消息推送。
             </div>
           ) : (
             <div className="space-y-4">
               {messages.map((msg, index) => (
                 <div key={index} className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-                  <p className="mb-2">{msg.message}</p>
+                  <p className="mb-2 text-lg">{msg.text}</p>
                   <div className="text-xs text-gray-500 flex justify-between">
-                    <span>狀態: {msg.status}</span>
+                    <span>用戶 ID: {msg.userId || '未知'}</span>
+                    <span>類型: {msg.type}</span>
                     <span>{new Date(msg.timestamp).toLocaleString()}</span>
                   </div>
                 </div>
@@ -75,33 +110,19 @@ export default function Home() {
           )}
         </div>
         
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex flex-col gap-4">
-            <label htmlFor="message" className="font-medium">
-              發送訊息
-            </label>
-            <textarea
-              id="message"
-              className="w-full border border-gray-300 dark:border-gray-600 rounded-md p-2 min-h-[100px] bg-transparent"
-              placeholder="輸入您的訊息..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              required
-            />
-            <button
-              type="submit"
-              disabled={loading || !message.trim()}
-              className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium h-12 px-5 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? '發送中...' : '發送訊息'}
-            </button>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h2 className="text-xl font-bold mb-4">使用說明</h2>
+          <div className="space-y-2">
+            <p>此頁面顯示從 LINE Bot 接收到的文字消息。</p>
+            <p>系統會自動每 5 秒刷新一次，您也可以點擊「刷新」按鈕手動更新。</p>
+            <p>目前僅顯示文字類型的消息。</p>
           </div>
-        </form>
+        </div>
       </main>
       
       <footer className="flex gap-[24px] flex-wrap items-center justify-center">
         <span className="text-sm text-gray-500">
-          憨吉訊息系統 © {new Date().getFullYear()}
+          憨吉 LINE Bot 訊息系統 © {new Date().getFullYear()}
         </span>
       </footer>
     </div>
