@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // 定义消息的接口
 interface MessageRequest {
-  message: string;
+  description: string;
+  event: string;
 }
 
 // POST /api/messages
@@ -11,17 +12,10 @@ export async function POST(request: NextRequest) {
     // 解析请求主体
     const body: MessageRequest = await request.json();
     
-    // 检查消息是否存在
-    if (!body.message) {
-      return NextResponse.json(
-        { error: '消息不能为空' },
-        { status: 400 }
-      );
-    }
-    
     // 构建响应
     const responseData = {
-      message: body.message,
+      description: body.description,
+      event: body.event,
       timestamp: new Date().toISOString(),
       status: 'success'
     };
