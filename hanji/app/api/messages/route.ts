@@ -19,13 +19,13 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
       status: 'success'
     };
-    
+    console.log(responseData);
     // 返回相同的消息
     return NextResponse.json(responseData, { status: 200 });
   } catch (error) {
-    console.error('处理消息时出错:', error);
+    console.error('訊息處理時發生錯誤:', error);
     return NextResponse.json(
-      { error: '处理请求时发生错误' },
+      { error: '請求時發生錯誤' },
       { status: 500 }
     );
   }
