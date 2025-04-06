@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Express API 测试</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 150px;
+            font-family: monospace;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #response {
+            margin-top: 20px;
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            display: none;
+        }
+        .success {
+            border-left: 4px solid #2ecc71;
+        }
+        .error {
+            border-left: 4px solid #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <h1>Express API 测试页面</h1>
+    
+    <div class="container">
+        <h2>发送 POST 请求</h2>
+        <form id="apiForm">
+            <div class="form-group">
+                <label for="jsonData">JSON 数据:</label>
+                <textarea id="jsonData" placeholder='{"name": "测试", "value": 123}'>{
+    "name": "测试用户",
+    "age": 25,
+    "items": ["手机", "电脑", "耳机"],
+    "address": {
+        "city": "北京",
+        "street": "朝阳区"
+    }
+}</textarea>
+            </div>
+            <button type="submit">发送请求</button>
+        </form>
+        
+        <div id="response"></div>
+    </div>
+
+    <script>
+        document.getElementById('apiForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const responseElement = document.getElementById('response');
+            responseElement.style.display = 'block';
+            responseElement.textContent = '正在发送请求...';
+            responseElement.className = '';
+            
+            try {
+                // 获取用户输入的JSON数据
+                const jsonInput = document.getElementById('jsonData').value;
+                let jsonData;
+                
+                try {
+                    jsonData = JSON.parse(jsonInput);
+                } catch (err) {
+                    throw new Error('JSON格式错误: ' + err.message);
+                }
+                
+                // 发送POST请求
+                const response = await fetch('/api/data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(jsonData)
+                });
+                
+                // 解析响应
+                const result = await response.json();
+                
+                // 显示响应
+                responseElement.textContent = JSON.stringify(result, null, 2);
+                responseElement.classList.add('success');
+                
+            } catch (error) {
+                responseElement.textContent = '错误: ' + error.message;
+                responseElement.classList.add('error');
+            }
+        });
+    </script>
+</body>
+</html> 
