@@ -21,20 +21,11 @@ app.get('/', (req, res) => {
 });
 
 // POST请求处理
-app.post('/api/data', (req, res) => {
+app.post('/messages', (req, res) => {
   // 获取请求体中的数据
   const requestData = req.body;
-  
-  // 创建响应数据
-  const responseData = {
-    success: true,
-    message: '数据已成功接收',
-    receivedData: requestData,
-    timestamp: new Date().toISOString()
-  };
-  
-  // 返回JSON格式的响应
-  res.json(responseData);
+  console.log(requestData);
+  res.send(requestData);
 });
 
 // 启动服务器
