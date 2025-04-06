@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // 定义消息的接口
-
+interface MessageRequest {
+    destination: string;
+    events: string;
+}
 
 // POST /api/messages
 export async function POST(request: NextRequest) {
   try {
     // 解析请求主体
-    const body: any = await request.json();
+    const body: MessageRequest = await request.json();
     
     console.log(body);
     // 返回相同的消息
