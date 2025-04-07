@@ -21,7 +21,7 @@ export default function Home() {
   const [messages, setMessages] = useState<LineMessage[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [useAI, setUseAI] = useState<boolean>(false);
+  const [useAI, setUseAI] = useState<boolean>(true);
   const [aiToggleLoading, setAiToggleLoading] = useState<boolean>(false);
 
   // 獲取消息
