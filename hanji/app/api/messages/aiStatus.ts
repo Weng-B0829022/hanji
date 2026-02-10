@@ -1,5 +1,5 @@
 // 全局變量存儲 AI 切換狀態
-let useAIResponse = false;
+let useAIResponse = true;
 
 // 更新 AI 使用狀態
 export function setAIStatus(status: boolean): boolean {
