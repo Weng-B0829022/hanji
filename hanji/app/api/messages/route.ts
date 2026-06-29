@@ -48,7 +48,7 @@ async function generateAIResponse(message: string): Promise<string> {
       return '汪汪...(AI回應失敗)';
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -56,19 +56,22 @@ async function generateAIResponse(message: string): Promise<string> {
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: prompt },
-          { role: 'user', content: message },
-        ],
+        instructions: prompt,
+        input: message,
+        tools: [{ type: 'web_search_preview' }],
       }),
     });
 
     const data = await response.json();
 
-    if (data.choices?.[0]?.message?.content) {
-      return data.choices[0].message.content;
+    // Responses API 回傳 output 陣列，找第一個 message 類型的內容
+    const messageOutput = data.output?.find((o: { type: string }) => o.type === 'message');
+    const text = messageOutput?.content?.find((c: { type: string }) => c.type === 'output_text')?.text;
+
+    if (text) {
+      return text;
     } else {
-      console.error('OpenAI API 返回格式不正確:', data);
+      console.error('Responses API 返回格式不正確:', JSON.stringify(data));
       return '汪汪...(無法理解)';
     }
   } catch (error) {
