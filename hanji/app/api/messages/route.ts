@@ -55,7 +55,7 @@ async function generateAIResponse(message: string): Promise<string> {
         'Authorization': `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         instructions: prompt,
         input: message,
         tools: [{ type: 'web_search_preview' }],
